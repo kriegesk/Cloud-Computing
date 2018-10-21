@@ -3,15 +3,20 @@
   <head>
     <title>Socket.IO chat</title>
     <style>
+		* { padding: 0; box-sizing: border-box; }
+
 		body{ 
-			background:#f9f9f9;
+			font: 13px Helvetica, Arial;
 			}
 		#container{
 		 width: 700px;
-		 margin: 0 auto
+		 margin: 0 auto;
 		}		
 		#chatFenster{
-			height: 300px;
+			float: left;
+			width: 500px;
+			height: 450px;	
+			overflow: auto;		
 		}
 		#chat{
 			display: none;
@@ -21,7 +26,7 @@
 			float:left;
 			border:1px #ccc solid;
 			border-radius: 10px;
-			backgroud:f4f4f4;
+			background:f4f4f4;
 			padding:10px;
 			
 		}
@@ -38,17 +43,25 @@
 		
 		#usernameWrapper{
 			
-			float: left;
+			float: right;
 			border:1px #ccc solid;
 			border-radius: 10px;
 			background:#f4f4f4;
-			padding:10px
+			padding:10px;
 			margin-left:20px;
 		}	
+
+		#m{
+			width: 450px;
+		}
 			
 		input{
-			height:30px
-			border:solid 1px #ccc;
+			height:30px;
+			border:solid 1px #ccc;			
+		}
+		button{
+			height:30px;
+			border:solid 1px #ccc;			
 		}
     </style>
   </head>
@@ -59,16 +72,14 @@
 			<p>Geben sie ihren Namen ein</p>
 			<form id="nameForm">
 				<input type="text" size="50" id="username">
-				<input type="submit" value="weiter">
+				<input type="submit" value="Weiter">
 			</form>
 		</div>
 			<div id="chat">	
 			<h2>WhatsUpp</h2>
 				<div id="chatWrapper">
 					<div id="chatFenster">
-						<form id ="messageForm">
-							<input id="m" autocomplete="off" /><button>Senden</button>
-						</form>
+							<ul id="messages"></ul>
 							<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 							<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 							<script>
@@ -78,7 +89,8 @@
 									var $users = $('#users');
 									var $username =$('#username');
 									var $messageForm = $('#messageForm');
-									var $chatFenster= $('#chatFenster');
+									var $messages= $('#messages');
+									var $chatFenster = $('#chatFenster');
 									
 									$nameForm.submit(function(e){
 										e.preventDefault();
@@ -96,9 +108,9 @@
 									
 									socket.on('usernames', function(data){
 										var html = 'User Online:' +'<br><br>';
+										var newuser = '';
 										for(i = 0; i < data.length;i++){
 											html += data[i]+ '<br>';
-											
 										}
 										$users.html(html);
 									});
@@ -109,14 +121,43 @@
 									return false;
 									});
 									socket.on('chat message', function(data){
-										
-									  $chatFenster.append('<Strong>'+data.user+ '</strong>: ' +data.msg+ '<br>');
-									  //window.scrollTo(0, document.body.scrollHeight);
+										var currentDate = new Date();
+										var minutes = '';
+										var seconds = '';
+										if(currentDate.getMinutes() < 10){
+											minutes += '0'+currentDate.getMinutes();
+										} else {
+											minutes += currentDate.getMinutes();
+										}
+										if(currentDate.getSeconds() < 10){
+											seconds += '0'+currentDate.getSeconds();
+										} else {
+											seconds += currentDate.getSeconds();
+										}
+										var datetime = currentDate.getDate() + '.' 
+													   + (currentDate.getMonth()+1) + '.'
+													   + currentDate.getFullYear() + ' @ '
+													   + currentDate.getHours() + ':'
+													   + minutes + ':'
+													   + seconds;
+										$messages.append('<Strong>'+data.user+ '</strong>: ' + data.msg 
+														 + '<br>' + '<i>Sent on: ' + datetime + '</i>' + '<br>');
+										//Hier muss man noch irgendwie den Wert berechnen wie weit es scrollen muss, 
+										//ist im Moment mit 1000 festgeschrieben
+										chatFenster.scrollTo({
+											top: 1000,
+											behavior: "smooth"
+										})
 									});
 								});
 							</script>
-					</div>
 				</div>
+				<div id="messageFormDiv">
+					<form id ="messageForm">
+						<input id="m" autocomplete="off" /><button>Senden</button>
+					</form>
+				</div>
+			</div>
 				<div id="chatUserWrapper">	
 					<div id="users">
 					</div>
