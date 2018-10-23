@@ -2,14 +2,36 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
+var SocketIOFileUpload = require('socketio-file-upload');
+var fs = require('fs');
 var usernames = [];
+app.use(SocketIOFileUpload.router);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+
+
 io.on('connection', function(socket){
 	console.log('Socket verbunden');
-	
+
+	//Set up the uploader with the path
+	var uploader = new SocketIOFileUpload();
+	uploader.dir = __dirname;
+	console.log('Path: ' + uploader.dir);
+	uploader.listen(socket);
+
+	//actions for the saved files
+	uploader.on('saved', function(event){
+		console.log('File Uploaded');
+		console.log(event.file);
+	});
+
+	//actions for an error
+	uploader.on('error', function(event){
+		console.log('Error from uploader',event);
+	});
+
 	//Nachricht senden
 	socket.on('chat message', function(data){
 		io.emit('chat message', {msg: data,user: socket.username});

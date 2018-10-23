@@ -5,7 +5,8 @@
   "author": "Matthias Schülein, Philipp Kriegeskorte",
   "dependencies": {
     "express": "^4.15.2",
-    "socket.io": "^1.7.4"
+    "socket.io": "^1.7.4",
+    "socketio-file-upload": "^0.6.3"
   },
   "scripts": {
     "start": "node index.js"

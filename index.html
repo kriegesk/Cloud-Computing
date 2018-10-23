@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>Socket.IO chat</title>
@@ -63,106 +63,133 @@
 			height:30px;
 			border:solid 1px #ccc;			
 		}
-    </style>
-  </head>
-  <body>
-  <div id ="container">
-		<div id ="usernameWrapper">
-			<H2> WhatsUpp</h2>
-			<p>Geben sie ihren Namen ein</p>
-			<form id="nameForm">
-				<input type="text" size="50" id="username">
-				<input type="submit" value="Weiter">
-			</form>
-		</div>
+	</style>
+	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	<script src="/siofu/client.js"></script>
+	<script type="text/javascript">
+		document.addEventListener("DOMContentLoaded", function(){
+			var socket = io.connect();
+			var siofu = new SocketIOFileUpload(socket);
+			
+			//EventListener for the upload button
+			document.getElementById("upload_btn").addEventListener("click",siofu.prompt, false);
+
+			//actions on upload
+			siofu.addEventListener("progress", function(event){
+				var percent = event.bytesLoaded / event.file.size * 100;
+				console.log("File is", percent.toFixed(2), " percent loaded");
+				document.getElementById("progress").innerHTML = "File is " + percent.toFixed(2) + " percent loaded";
+			});
+
+			//actions when upload is complete
+			siofu.addEventListener("complete", function(event){
+				console.log(event.success);
+				console.log(event.file);
+			});
+		}, false);
+	</script>
+	<script>
+		$(function () {
+			var $nameForm = $('#nameForm');
+			var socket = io();
+			var $users = $('#users');
+			var $username =$('#username');
+			var $messageForm = $('#messageForm');
+			var $messages= $('#messages');
+			var $chatFenster = $('#chatFenster');
+			
+			$nameForm.submit(function(e){
+				e.preventDefault();
+				console.log('angemeldet user: ' + $username.val());
+				socket.emit('new user',$username.val(),function(data){
+					if(data){
+						$('#usernameWrapper').hide();
+						$('#chat').show();
+					}else{
+						
+					}
+				});
+				
+			});
+			
+			socket.on('usernames', function(data){
+				var html = 'User Online:' +'<br><br>';
+				var newuser = '';
+				for(i = 0; i < data.length;i++){
+					html += data[i]+ '<br>';
+				}
+				$users.html(html);
+			});
+			
+			$messageForm.submit(function(e){
+			  socket.emit('chat message', $('#m').val());
+			  $('#m').val('');
+			return false;
+			});
+			socket.on('chat message', function(data){
+				var currentDate = new Date();
+				var minutes = '';
+				var seconds = '';
+				if(currentDate.getMinutes() < 10){
+					minutes += '0'+currentDate.getMinutes();
+				} else {
+					minutes += currentDate.getMinutes();
+				}
+				if(currentDate.getSeconds() < 10){
+					seconds += '0'+currentDate.getSeconds();
+				} else {
+					seconds += currentDate.getSeconds();
+				}
+				var datetime = currentDate.getDate() + '.' 
+							   + (currentDate.getMonth()+1) + '.'
+							   + currentDate.getFullYear() + ' @ '
+							   + currentDate.getHours() + ':'
+							   + minutes + ':'
+							   + seconds;
+				$messages.append('<Strong>'+data.user+ '</strong>: ' + data.msg 
+								 + '<br>' + '<i>Sent on: ' + datetime + '</i>' + '<br>');
+				//Hier muss man noch irgendwie den Wert berechnen wie weit es scrollen muss, 
+				//ist im Moment mit 1000 festgeschrieben
+				chatFenster.scrollTo({
+					top: 1000,
+					behavior: "smooth"
+				})
+			});
+		});
+	</script>
+  	</head>
+  	<body>
+  		<div id ="container">
+			<div id ="usernameWrapper">
+				<H2> WhatsUpp</h2>
+				<p>Geben sie ihren Namen ein</p>
+				<form id="nameForm">
+					<input type="text" size="50" id="username">
+					<input type="submit" value="Weiter">
+				</form>
+			</div>
 			<div id="chat">	
 			<h2>WhatsUpp</h2>
 				<div id="chatWrapper">
 					<div id="chatFenster">
-							<ul id="messages"></ul>
-							<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-							<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-							<script>
-								$(function () {
-									var $nameForm = $('#nameForm');
-									var socket = io();
-									var $users = $('#users');
-									var $username =$('#username');
-									var $messageForm = $('#messageForm');
-									var $messages= $('#messages');
-									var $chatFenster = $('#chatFenster');
-									
-									$nameForm.submit(function(e){
-										e.preventDefault();
-										console.log('angemeldet user: ' + $username.val());
-										socket.emit('new user',$username.val(),function(data){
-											if(data){
-												$('#usernameWrapper').hide();
-												$('#chat').show();
-											}else{
-												
-											}
-										});
-										
-									});
-									
-									socket.on('usernames', function(data){
-										var html = 'User Online:' +'<br><br>';
-										var newuser = '';
-										for(i = 0; i < data.length;i++){
-											html += data[i]+ '<br>';
-										}
-										$users.html(html);
-									});
-									
-									$messageForm.submit(function(e){
-									  socket.emit('chat message', $('#m').val());
-									  $('#m').val('');
-									return false;
-									});
-									socket.on('chat message', function(data){
-										var currentDate = new Date();
-										var minutes = '';
-										var seconds = '';
-										if(currentDate.getMinutes() < 10){
-											minutes += '0'+currentDate.getMinutes();
-										} else {
-											minutes += currentDate.getMinutes();
-										}
-										if(currentDate.getSeconds() < 10){
-											seconds += '0'+currentDate.getSeconds();
-										} else {
-											seconds += currentDate.getSeconds();
-										}
-										var datetime = currentDate.getDate() + '.' 
-													   + (currentDate.getMonth()+1) + '.'
-													   + currentDate.getFullYear() + ' @ '
-													   + currentDate.getHours() + ':'
-													   + minutes + ':'
-													   + seconds;
-										$messages.append('<Strong>'+data.user+ '</strong>: ' + data.msg 
-														 + '<br>' + '<i>Sent on: ' + datetime + '</i>' + '<br>');
-										//Hier muss man noch irgendwie den Wert berechnen wie weit es scrollen muss, 
-										//ist im Moment mit 1000 festgeschrieben
-										chatFenster.scrollTo({
-											top: 1000,
-											behavior: "smooth"
-										})
-									});
-								});
-							</script>
-				</div>
+							<ul id="messages"></ul>		
+					</div>
 				<div id="messageFormDiv">
 					<form id ="messageForm">
 						<input id="m" autocomplete="off" /><button>Senden</button>
 					</form>
 				</div>
-			</div>
+				<div id="FileUpload">
+					<p><button id="upload_btn">Upload File</button></p>
+					<div id="progress"></div>
+				</div>
+				</div>
 				<div id="chatUserWrapper">	
 					<div id="users">
 					</div>
 				</div>
 			</div>
-	</div>
-  </body>
+		</div>
+  	</body>
 </html>
