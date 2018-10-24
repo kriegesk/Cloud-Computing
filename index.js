@@ -5,6 +5,7 @@ var port = process.env.PORT || 3000;
 var SocketIOFileUpload = require('socketio-file-upload');
 var fs = require('fs');
 var usernames = [];
+var upload;
 app.use(SocketIOFileUpload.router);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -23,7 +24,12 @@ io.on('connection', function(socket){
 
 	//actions for the saved files
 	uploader.on('saved', function(event){
+		upload = event;
+		io.emit('data', upload);
 		console.log('File Uploaded');
+		console.log('-------------------------------');
+		console.log(event);
+		console.log('-------------------------------');
 		console.log(event.file);
 	});
 
@@ -35,7 +41,7 @@ io.on('connection', function(socket){
 	//Nachricht senden
 	socket.on('chat message', function(data){
 		io.emit('chat message', {msg: data,user: socket.username});
-		});
+	});
 	
 	socket.on('new user', function(data,callback){
 		if(usernames.indexOf(data) != -1){

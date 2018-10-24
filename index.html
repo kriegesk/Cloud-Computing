@@ -84,8 +84,9 @@
 
 			//actions when upload is complete
 			siofu.addEventListener("complete", function(event){
-				console.log(event.success);
+				console.log("Local upload: " + event.success);
 				console.log(event.file);
+				document.getElementById("progress").innerHTML = "File is uploaded";
 			});
 		}, false);
 	</script>
@@ -113,6 +114,13 @@
 				
 			});
 			
+			socket.on('data', function(data){
+				//alert(data.name);
+				//messages.append('<a href="' + directory + '" download>');
+				//var url = URL.createObjectURL(data);
+				$messages.append('<a href='+ data + ' download>' + data.name + '<br>');			
+			});	
+
 			socket.on('usernames', function(data){
 				var html = 'User Online:' +'<br><br>';
 				var newuser = '';
