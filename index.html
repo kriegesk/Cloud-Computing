@@ -100,27 +100,34 @@
 			var $messages= $('#messages');
 			var $chatFenster = $('#chatFenster');
 			
+			//actions for the login window
 			$nameForm.submit(function(e){
-				e.preventDefault();
-				console.log('angemeldet user: ' + $username.val());
-				socket.emit('new user',$username.val(),function(data){
+				if($username.val().trim()==""){
+					alert('Please choose a name!');
+					return false;
+				} else {
+					e.preventDefault();
+					console.log('user logged in: ' + $username.val());
+					socket.emit('new user',$username.val(),function(data){
 					if(data){
 						$('#usernameWrapper').hide();
 						$('#chat').show();
 					}else{
 						
 					}
-				});
+					});	
+				}
+				
 				
 			});
 			
+			//event for the data download
 			socket.on('data', function(data){
-				//alert(data.name);
-				//messages.append('<a href="' + directory + '" download>');
-				//var url = URL.createObjectURL(data);
-				$messages.append('<a href='+ data + ' download>' + data.name + '<br>');			
+				//$messages.append('<a href="data:application/' + data + ';charset=utf-8;base64,Zm9vIGJhcg==">text file</a><br/>')
+				//document.getElementById('downloadbtn').disabled = false;			
 			});	
 
+			//update of usernames
 			socket.on('usernames', function(data){
 				var html = 'User Online:' +'<br><br>';
 				var newuser = '';
@@ -130,11 +137,19 @@
 				$users.html(html);
 			});
 			
+			//actions for the submission of a message to the server
 			$messageForm.submit(function(e){
-			  socket.emit('chat message', $('#m').val());
-			  $('#m').val('');
-			return false;
+				if($('#m').val().trim()==""){
+					alert('Do not send empty messages!');
+					return false;
+				} else {
+					socket.emit('chat message', $('#m').val());
+			  		$('#m').val('');
+					return false;
+				}
 			});
+
+			//getting a message from the server
 			socket.on('chat message', function(data){
 				var currentDate = new Date();
 				var minutes = '';
@@ -185,13 +200,22 @@
 					</div>
 				<div id="messageFormDiv">
 					<form id ="messageForm">
-						<input id="m" autocomplete="off" /><button>Senden</button>
+						<input id="m" autocomplete="off"/><button>Senden</button>
 					</form>
 				</div>
 				<div id="FileUpload">
 					<p><button id="upload_btn">Upload File</button></p>
 					<div id="progress"></div>
 				</div>
+				<!--<div id="download">
+					<button id="downloadbtn" disabled>Download File</button>
+					<script type="text/javascript">
+						$("#downloadbtn").click(function(){
+							window.open('/download');
+							document.getElementById('downloadbtn').disabled = true;
+						})
+					</script>
+				</div>-->
 				</div>
 				<div id="chatUserWrapper">	
 					<div id="users">

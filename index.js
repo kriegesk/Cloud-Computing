@@ -3,14 +3,14 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 var SocketIOFileUpload = require('socketio-file-upload');
-var fs = require('fs');
 var usernames = [];
-var upload;
+var FileReader = require('filereader');
+var File = require('File');
+var data;
 app.use(SocketIOFileUpload.router);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
-
 
 
 io.on('connection', function(socket){
@@ -24,8 +24,7 @@ io.on('connection', function(socket){
 
 	//actions for the saved files
 	uploader.on('saved', function(event){
-		upload = event;
-		io.emit('data', upload);
+		io.emit('data',event);
 		console.log('File Uploaded');
 		console.log('-------------------------------');
 		console.log(event);
@@ -38,11 +37,12 @@ io.on('connection', function(socket){
 		console.log('Error from uploader',event);
 	});
 
-	//Nachricht senden
+	//send message
 	socket.on('chat message', function(data){
 		io.emit('chat message', {msg: data,user: socket.username});
 	});
 	
+	//create new user and push him to the usernames array
 	socket.on('new user', function(data,callback){
 		if(usernames.indexOf(data) != -1){
 			callback(false);	
@@ -54,7 +54,7 @@ io.on('connection', function(socket){
 		}
 	});
 	
-	//Benutzernamen Updaten
+	//update usernames in clients
 	function updateUsernames(){
 		io.emit('usernames', usernames);
 	}
