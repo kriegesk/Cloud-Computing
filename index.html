@@ -63,6 +63,16 @@
 			height:30px;
 			border:solid 1px #ccc;			
 		}
+		.private{
+			color:dimgray;
+			font-style:italic;
+		}
+		.public{
+			color:black;
+		}
+		.error{
+			color:darkred;
+		}
 	</style>
 	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
@@ -120,6 +130,7 @@
 				
 				
 			});
+		
 			
 			//event for the data download
 			socket.on('data', function(data){
@@ -143,7 +154,9 @@
 					alert('Do not send empty messages!');
 					return false;
 				} else {
-					socket.emit('chat message', $('#m').val());
+					socket.emit('chat message', $('#m').val(),function(data){
+						$messages.append('<span class="error"> ERROR: '+ data  + '</span><br>');
+					});
 			  		$('#m').val('');
 					return false;
 				}
@@ -170,14 +183,19 @@
 							   + currentDate.getHours() + ':'
 							   + minutes + ':'
 							   + seconds;
-				$messages.append('<Strong>'+data.user+ '</strong>: ' + data.msg 
-								 + '<br>' + '<i>Sent on: ' + datetime + '</i>' + '<br>');
+				$messages.append('<span class="public"><Strong>'+data.user+ '</strong>: ' + data.msg 
+								 + '<br>' + '<i>Sent on: ' + datetime + '</span></i><br>');
 				//Hier muss man noch irgendwie den Wert berechnen wie weit es scrollen muss, 
 				//ist im Moment mit 1000 festgeschrieben
 				chatFenster.scrollTo({
 					top: 1000,
 					behavior: "smooth"
 				})
+			});
+			
+				// Private msg Function
+				socket.on('private', function(data){
+				$messages.append('<span class="private"> <Strong>'+ 'Private: '+data.user+ '</strong>: ' + data.msg  + '</span><br>');
 			});
 		});
 	</script>
