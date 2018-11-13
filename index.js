@@ -1,12 +1,22 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
 var SocketIOFileUpload = require('socketio-file-upload');
 var usernames = {};
-var FileReader = require('filereader');
-var File = require('File');
-var data;
+var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
+var bodyParser = require('body-parser');
+var Request = require('request');
+
+require('dotenv').config({silent: true});
+
+let toneAnalyzer = new ToneAnalyzerV3({
+	version_date: '2017-09-21',
+});
+
+app.use(bodyParser.json());
+//app.use(express.static('public'));
 app.use(SocketIOFileUpload.router);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
@@ -46,6 +56,8 @@ io.on('connection', function(socket){
 			if(ind !== -1){
 				var name = msg.substr(0, ind);
 				var msg = msg.substr(ind + 1);
+				var mood = getTone(msg)
+				console.log('Mood: ' + mood);
 				if(name in usernames){
 					usernames[name].emit('private', {msg: msg,user: socket.username});
 					usernames[socket.username].emit('private', {msg: msg,user: socket.username});
@@ -57,6 +69,8 @@ io.on('connection', function(socket){
 				callback(" Bitte fügen sie eine Nachricht hinzu");
 			}
 		}else{
+		var mood = getTone(msg)
+		console.log('Mood: ' + mood);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
 	});
@@ -95,3 +109,95 @@ http.listen(port, function(){
   console.log('Server ist gestartet');
   console.log('listening on *:' + port);
 });
+
+//ToneAnalyzer
+function createToneRequest (request) {
+	let toneChatRequest;
+  
+	if (request.texts) {
+	  toneChatRequest = {utterances: []};
+  
+	  for (let i in request.texts) {
+		let utterance = {text: request.texts[i]};
+		toneChatRequest.utterances.push(utterance);
+	  }
+	}
+  
+	return toneChatRequest;
+  }
+
+  function happyOrUnhappy (response) {
+	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic'];
+	const unhappyTones = ['sad', 'frustrated', 'impolite'];
+  
+	let happyValue = 0;
+	let unhappyValue = 0;
+  
+	for (let i in response.utterances_tone) {
+	  let utteranceTones = response.utterances_tone[i].tones;
+	  for (let j in utteranceTones) {
+		if (happyTones.includes(utteranceTones[j].tone_id)) {
+		  happyValue = happyValue + utteranceTones[j].score;
+		}
+		if (unhappyTones.includes(utteranceTones[j].tone_id)) {
+		  unhappyValue = unhappyValue + utteranceTones[j].score;
+		}
+	  }
+	}
+	if (happyValue >= unhappyValue) {
+	  return 'happy';
+	}
+	else {
+	  return 'unhappy';
+	}
+  }
+
+  app.post('http://localhost:3000/tone', (req, res, next) => {
+	let toneRequest = createToneRequest(req.body);
+  
+	if (toneRequest) {
+	  toneAnalyzer.toneChat(toneRequest, (err, response) => {
+		if (err) {
+		  return next(err);
+		}
+		let answer = {mood: happyOrUnhappy(response)};
+		console.log('Answer: ' + answer);
+		return res.json(answer);
+	  });
+	}
+	else {
+	  return res.status(400).send({error: 'Invalid Input'});
+	}
+  });
+
+  
+
+  function getTone(msg) {
+	const myRequest = new Request('http://localhost:3000/tone', {
+		method: "POST",
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json',
+			'mode': 'cors'
+		},
+		body: JSON.stringify({
+		   texts: [msg]
+		})
+	})
+
+	//fetch(myRequest)
+	.then((response) => {
+		var contentType = response.headers.get("content-type");
+		if(contentType && contentType.includes("application/json")) {
+		   return response.json();
+		}
+		throw new TypeError("Oops, we haven't got JSON!");
+	})
+	.then((response) => { 
+		console.log("response:" +  JSON.stringify(response));
+		if (response.mood) {
+		  //document.getElementById("mood").value = response.mood;
+		  return response.mood;
+		}
+	})
+}

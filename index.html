@@ -83,6 +83,11 @@
 	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 	<script src="/siofu/client.js"></script>
 	<script type="text/javascript">
+		/*document.getElementById("upload-btn").addEventListener("click",function(){
+			console.log($("#files")[0].file[0]);
+			var file = $('#files')[0].file[0];
+			socket.emit('upload')
+		});
 		document.addEventListener("DOMContentLoaded", function(){
 			var socket = io.connect();
 			var siofu = new SocketIOFileUpload(socket);
@@ -103,7 +108,7 @@
 				console.log(event.file);
 				document.getElementById("progress").innerHTML = "File is uploaded";
 			});
-		}, false);
+		}, false);*/
 	</script>
 	<script>
 		$(function () {
@@ -227,8 +232,12 @@
 					</form>
 				</div>
 				<div id="FileUpload">
-					<p><button id="upload_btn">Upload File</button></p>
-					<div id="progress"></div>
+					<form id="uploadForm">
+						<input id="files" type="file" name="data">
+						<button id="upload_btn">Upload File</button>
+						<div id="progress"></div>
+					</form>
+					
 				</div>
 				<!--<div id="download">
 					<button id="downloadbtn" disabled>Download File</button>
