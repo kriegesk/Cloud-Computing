@@ -1,0 +1,5 @@
+---
+applications:
+- name: pedantic-leavitt
+  memory: 512M
+  instances: 1
