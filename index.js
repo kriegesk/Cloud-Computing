@@ -118,32 +118,6 @@ http.listen(port, function(){
 
 //--------------------------------------------------------------------------ToneAnalyzer
 
-/*
-function AnalyzeTone(message,socket){
-	var value;
-
-	let params = {
-		tone_input: message,
-		content_type: 'text/plain',
-		sentences: true
-	};
-
-	toneAnalyzer.tone(params,function(error,response){
-		value = '';
-		if(error){
-			value = error;
-			console.log(value);
-		} else {
-			console.log('ToneAnalyzervalue: ' + JSON.stringify(response,null,2));
-			value = happyOrUnhappy((response));
-			var msg = "my Mood " + value;
-			io.emit('chat message', {msg: msg,user: socket.username});
-			console.log(value);
-		}
-	})
-
-	return value;
-*/
 function AnalyzeTone(message,socket){
  	value = "";
 	var params = createToneRequest(message,socket)
@@ -166,7 +140,6 @@ toneAnalyzer.toneChat(params,function(error,response) {
 	if (error) {
 		console.log(error);
 	} else {
-		console.log('Im toneAnalyzer drinnen');
 		value = happyOrUnhappy((response));
 		console.log("value ist = " + value);
 		console.log(JSON.stringify(response, null, 2));	
@@ -200,51 +173,3 @@ return value;
     return ':(';
   }
 }
-
-	//---------------------------------------------Die Funktioniert------------------------------------------
-		/*	for (let i in response.sentences_tone) {
-		console.log('Erste For-Schleife Hallo');
-		console.log('Sentence Score: '+ response.sentences_tone[i]);
-		
-	  let sentencesTone = response.sentences_tone[i].tones;
-	  for (let j in sentencesTone) {
-			console.log('Happy or Unhappy inside for ' + sentencesTone[j]);
-		if (happyTones.includes(sentencesTone[j].tone_id)) {
-			console.log('HAPPY');
-		  happyValue = happyValue + sentencesTone[j].score;
-		}
-		if (unhappyTones.includes(sentencesTone[j].tone_id)) {
-			console.log('UNHAPPY');
-		  unhappyValue = unhappyValue + sentencesTone[j].score;
-		}
-		}
-			console.log('happyvalue: ' + happyValue);
-			console.log('unhappyValue: ' + unhappyValue);
-			if (happyValue >= unhappyValue) {
-	  		return ':)';
-			}
-			else {
-	 			return ':(';
-			}
-	}*/
-	//-------------------------------------------------------------------------------------------------------
-
-	/*
-	for (let i in response.document_tone) {
-		console.log('Erste For-Schleife Hallo');
-		console.log('ToneScore: '+ response.document_tone.tones[i]);
-		
-		
-	  let documentTone = response.document_tone[i].tones;
-	  for (let j in documentTone) {
-			console.log('Happy or Unhappy inside for ' + documentTone[j]);
-		if (happyTones.includes(documentTone[j].tone_id)) {
-			console.log('HAPPY');
-		  happyValue = happyValue + documentTone[j].score;
-		}
-		if (unhappyTones.includes(documentTone[j].tone_id)) {
-			console.log('UNHAPPY');
-		  unhappyValue = unhappyValue + documentTone[j].score;
-		}
-	  }
-	}*/
