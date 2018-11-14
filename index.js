@@ -120,9 +120,11 @@ http.listen(port, function(){
 //--------------------------------------------------------------------------ToneAnalyzer
 
 function AnalyzeTone(message,socket){
- 	
+	 
+	//params that should be analyzed 
 	var params = createToneRequest(message,socket)
 
+	//function to split our message and put them into toneChatRequest
 function createToneRequest (message,socket) {
 	var toneChatRequest;
 	console.log(message);
@@ -137,6 +139,7 @@ function createToneRequest (message,socket) {
 		return toneChatRequest;
 }
 
+//the actual analyzer 
 toneAnalyzer.toneChat(params,function(error,response) {
 	if (error) {
 		console.log(error);
@@ -149,6 +152,7 @@ toneAnalyzer.toneChat(params,function(error,response) {
 });
 
 }
+// counts the different happy/unhappyTones to get a result if the mood is positiv or negativ 
   function happyOrUnhappy (response) {
 	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic','joy'];
 	const unhappyTones = ['sad', 'frustrated', 'impolite','sadness','anger'];
