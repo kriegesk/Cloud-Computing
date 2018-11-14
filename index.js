@@ -6,18 +6,23 @@ var port = process.env.PORT || 3000;
 var SocketIOFileUpload = require('socketio-file-upload');
 var usernames = {};
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
+var readline = require('readline');
 var bodyParser = require('body-parser');
 var Request = require('request');
 
 require('dotenv').config({silent: true});
 
-let toneAnalyzer = new ToneAnalyzerV3({
+const toneAnalyzer = new ToneAnalyzerV3({
 	version_date: '2017-09-21',
+	username: process.env.TONE_ANALYZER_USERNAME,
+	password: process.env.TONE_ANALYZER_PASSWORD,
 });
+
+
 
 app.use(bodyParser.json());
 //app.use(express.static('public'));
-app.use(SocketIOFileUpload.router);
+//app.use(SocketIOFileUpload.router);
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
@@ -56,7 +61,7 @@ io.on('connection', function(socket){
 			if(ind !== -1){
 				var name = msg.substr(0, ind);
 				var msg = msg.substr(ind + 1);
-				var mood = getTone(msg)
+				var mood = AnalyzeTone(msg, socket);
 				console.log('Mood: ' + mood);
 				if(name in usernames){
 					usernames[name].emit('private', {msg: msg,user: socket.username});
@@ -69,7 +74,7 @@ io.on('connection', function(socket){
 				callback(" Bitte fügen sie eine Nachricht hinzu");
 			}
 		}else{
-		var mood = getTone(msg)
+		var mood = AnalyzeTone(msg, socket);
 		console.log('Mood: ' + mood);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
@@ -111,39 +116,62 @@ http.listen(port, function(){
 });
 
 //ToneAnalyzer
-function createToneRequest (request) {
-	let toneChatRequest;
-  
-	if (request.texts) {
-	  toneChatRequest = {utterances: []};
-  
-	  for (let i in request.texts) {
-		let utterance = {text: request.texts[i]};
-		toneChatRequest.utterances.push(utterance);
-	  }
-	}
-  
-	return toneChatRequest;
-  }
+
+
+
+function AnalyzeTone(message,socket){
+	var value;
+
+	let params = {
+		tone_input: message,
+		content_type: 'text/plain',
+		sentences: true
+	};
+
+	toneAnalyzer.tone(params,function(error,response){
+		value = '';
+		if(error){
+			value = error;
+			console.log(value);
+		} else {
+			console.log('ToneAnalyzervalue: ' + JSON.stringify(response,null,2));
+			value = happyOrUnhappy(JSON.stringify(response,null,2));
+			var msg = socket.username + " is " + value;
+			io.emit('chat message', {msg: msg,user: socket.username});
+			console.log(value);
+		}
+	})
+	
+	return value;
+}
 
   function happyOrUnhappy (response) {
-	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic'];
-	const unhappyTones = ['sad', 'frustrated', 'impolite'];
-  
+	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic','joy'];
+	const unhappyTones = ['sad', 'frustrated', 'impolite','sadness'];
+	//const values = JSON.parse(response);
+	//console.log('Values: ' + response);
+	console.log('Happy or unhappy: ' + response)
+	console.log('Arrays: ' + response);
 	let happyValue = 0;
 	let unhappyValue = 0;
   
 	for (let i in response.utterances_tone) {
+		console.log('ERste For-Schleife Hallo')
 	  let utteranceTones = response.utterances_tone[i].tones;
 	  for (let j in utteranceTones) {
+			console.log('Happy or Unhappy inside for ' + utteranceTones[j]);
 		if (happyTones.includes(utteranceTones[j].tone_id)) {
+			console.log('HAPPY');
 		  happyValue = happyValue + utteranceTones[j].score;
 		}
 		if (unhappyTones.includes(utteranceTones[j].tone_id)) {
+			console.log('UNHAPPY');
 		  unhappyValue = unhappyValue + utteranceTones[j].score;
 		}
 	  }
 	}
+	console.log('happyvalue: ' + happyValue);
+	console.log('unhappyValue: ' + unhappyValue);
 	if (happyValue >= unhappyValue) {
 	  return 'happy';
 	}
@@ -152,7 +180,7 @@ function createToneRequest (request) {
 	}
   }
 
-  app.post('http://localhost:3000/tone', (req, res, next) => {
+/*  app.post('http://localhost:3000/tone', (req, res, next) => {
 	let toneRequest = createToneRequest(req.body);
   
 	if (toneRequest) {
@@ -185,7 +213,7 @@ function createToneRequest (request) {
 		})
 	})
 
-	//fetch(myRequest)
+	fetch(myRequest)
 	.then((response) => {
 		var contentType = response.headers.get("content-type");
 		if(contentType && contentType.includes("application/json")) {
@@ -200,4 +228,4 @@ function createToneRequest (request) {
 		  return response.mood;
 		}
 	})
-}
+	}*/
