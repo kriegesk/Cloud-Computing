@@ -9,6 +9,7 @@ var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 var readline = require('readline');
 var bodyParser = require('body-parser');
 var Request = require('request');
+var value;
 
 require('dotenv').config({silent: true});
 
@@ -75,7 +76,7 @@ io.on('connection', function(socket){
 			}
 		}else{
 		var mood = AnalyzeTone(msg, socket);
-		console.log('Mood in message : ' + mood);
+		console.log('Mood in message : ' + value);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
 	});
@@ -119,7 +120,7 @@ http.listen(port, function(){
 //--------------------------------------------------------------------------ToneAnalyzer
 
 function AnalyzeTone(message,socket){
- 	value = "";
+ 	
 	var params = createToneRequest(message,socket)
 
 function createToneRequest (message,socket) {
@@ -142,10 +143,11 @@ toneAnalyzer.toneChat(params,function(error,response) {
 	} else {
 		value = happyOrUnhappy((response));
 		console.log("value ist = " + value);
+		io.emit('mood', {msg: value,user: socket.username});
 		console.log(JSON.stringify(response, null, 2));	
 	}
 });
-return value;
+
 }
   function happyOrUnhappy (response) {
 	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic','joy'];

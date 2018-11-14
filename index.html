@@ -73,6 +73,11 @@
 		.error{
 			color:darkred;
 		}
+		.mood{
+			font-size:9px;
+			font-style:italic;
+			color:rgb(180, 102, 0); 
+		}
 		.date{
 			font-size:9px;
 			font-style:italic;
@@ -205,7 +210,12 @@
 			
 				// Private msg Function
 				socket.on('private', function(data){
-				$messages.append('<span class="private"> <Strong>'+ 'private msg von '+data.user+ '</strong>: ' + data.msg  + '</span><br>');
+				$messages.append('<span class="private"> <Strong>'+ 'private: '+data.user+ '</strong>: ' + data.msg  + '</span><br>');
+			});
+
+				// mood function
+			socket.on('mood', function(data){
+				$messages.append('<span class="mood"> mood of the user is:  '+ data.msg  + '</span><br>');
 			});
 		});
 	</script>
