@@ -75,7 +75,7 @@ io.on('connection', function(socket){
 			}
 		}else{
 		var mood = AnalyzeTone(msg, socket);
-		console.log('Mood: ' + mood);
+		console.log('Mood in message : ' + mood);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
 	});
@@ -88,7 +88,6 @@ io.on('connection', function(socket){
 			callback(true);
 			socket.username = data;
 			usernames[socket.username] = socket;
-			//usernames.push(socket.username);
 			updateUsernames();
 		}
 	});
@@ -115,10 +114,11 @@ http.listen(port, function(){
   console.log('listening on *:' + port);
 });
 
-//ToneAnalyzer
 
 
+//--------------------------------------------------------------------------ToneAnalyzer
 
+/*
 function AnalyzeTone(message,socket){
 	var value;
 
@@ -135,97 +135,116 @@ function AnalyzeTone(message,socket){
 			console.log(value);
 		} else {
 			console.log('ToneAnalyzervalue: ' + JSON.stringify(response,null,2));
-			value = happyOrUnhappy(JSON.stringify(response,null,2));
-			var msg = socket.username + " is " + value;
+			value = happyOrUnhappy((response));
+			var msg = "my Mood " + value;
 			io.emit('chat message', {msg: msg,user: socket.username});
 			console.log(value);
 		}
 	})
-	
+
 	return value;
+*/
+function AnalyzeTone(message,socket){
+ 	value = "";
+	var params = createToneRequest(message,socket)
+
+function createToneRequest (message,socket) {
+	var toneChatRequest;
+	console.log(message);
+	var messageSplit = message.split('.');
+	toneChatRequest = {utterances: []};
+
+    for (let i in messageSplit ) {
+			console.log("message split" + messageSplit [i]);
+      let utterance = {text: messageSplit[i]};
+      toneChatRequest.utterances.push(utterance);
+		}
+		return toneChatRequest;
 }
 
+toneAnalyzer.toneChat(params,function(error,response) {
+	if (error) {
+		console.log(error);
+	} else {
+		console.log('Im toneAnalyzer drinnen');
+		value = happyOrUnhappy((response));
+		console.log("value ist = " + value);
+		console.log(JSON.stringify(response, null, 2));	
+	}
+});
+return value;
+}
   function happyOrUnhappy (response) {
 	const happyTones = ['satisfied', 'excited', 'polite', 'sympathetic','joy'];
-	const unhappyTones = ['sad', 'frustrated', 'impolite','sadness'];
-	//const values = JSON.parse(response);
-	//console.log('Values: ' + response);
-	console.log('Happy or unhappy: ' + response)
-	console.log('Arrays: ' + response);
+	const unhappyTones = ['sad', 'frustrated', 'impolite','sadness','anger'];
 	let happyValue = 0;
 	let unhappyValue = 0;
-  
+
 	for (let i in response.utterances_tone) {
-		console.log('ERste For-Schleife Hallo')
-	  let utteranceTones = response.utterances_tone[i].tones;
-	  for (let j in utteranceTones) {
-			console.log('Happy or Unhappy inside for ' + utteranceTones[j]);
-		if (happyTones.includes(utteranceTones[j].tone_id)) {
+    let utteranceTones = response.utterances_tone[i].tones;
+    for (let j in utteranceTones) {
+      if (happyTones.includes(utteranceTones[j].tone_id)) {
+        happyValue = happyValue + utteranceTones[j].score;
+      }
+      if (unhappyTones.includes(utteranceTones[j].tone_id)) {
+        unhappyValue = unhappyValue + utteranceTones[j].score;
+      }
+    }
+	}
+	console.log('HappyValue: '+ happyValue);
+	console.log('unhappyValue: '+ unhappyValue);
+  if (happyValue >= unhappyValue) {
+    return ':D';
+  }
+  else {
+    return ':(';
+  }
+}
+
+	//---------------------------------------------Die Funktioniert------------------------------------------
+		/*	for (let i in response.sentences_tone) {
+		console.log('Erste For-Schleife Hallo');
+		console.log('Sentence Score: '+ response.sentences_tone[i]);
+		
+	  let sentencesTone = response.sentences_tone[i].tones;
+	  for (let j in sentencesTone) {
+			console.log('Happy or Unhappy inside for ' + sentencesTone[j]);
+		if (happyTones.includes(sentencesTone[j].tone_id)) {
 			console.log('HAPPY');
-		  happyValue = happyValue + utteranceTones[j].score;
+		  happyValue = happyValue + sentencesTone[j].score;
 		}
-		if (unhappyTones.includes(utteranceTones[j].tone_id)) {
+		if (unhappyTones.includes(sentencesTone[j].tone_id)) {
 			console.log('UNHAPPY');
-		  unhappyValue = unhappyValue + utteranceTones[j].score;
+		  unhappyValue = unhappyValue + sentencesTone[j].score;
+		}
+		}
+			console.log('happyvalue: ' + happyValue);
+			console.log('unhappyValue: ' + unhappyValue);
+			if (happyValue >= unhappyValue) {
+	  		return ':)';
+			}
+			else {
+	 			return ':(';
+			}
+	}*/
+	//-------------------------------------------------------------------------------------------------------
+
+	/*
+	for (let i in response.document_tone) {
+		console.log('Erste For-Schleife Hallo');
+		console.log('ToneScore: '+ response.document_tone.tones[i]);
+		
+		
+	  let documentTone = response.document_tone[i].tones;
+	  for (let j in documentTone) {
+			console.log('Happy or Unhappy inside for ' + documentTone[j]);
+		if (happyTones.includes(documentTone[j].tone_id)) {
+			console.log('HAPPY');
+		  happyValue = happyValue + documentTone[j].score;
+		}
+		if (unhappyTones.includes(documentTone[j].tone_id)) {
+			console.log('UNHAPPY');
+		  unhappyValue = unhappyValue + documentTone[j].score;
 		}
 	  }
-	}
-	console.log('happyvalue: ' + happyValue);
-	console.log('unhappyValue: ' + unhappyValue);
-	if (happyValue >= unhappyValue) {
-	  return 'happy';
-	}
-	else {
-	  return 'unhappy';
-	}
-  }
-
-/*  app.post('http://localhost:3000/tone', (req, res, next) => {
-	let toneRequest = createToneRequest(req.body);
-  
-	if (toneRequest) {
-	  toneAnalyzer.toneChat(toneRequest, (err, response) => {
-		if (err) {
-		  return next(err);
-		}
-		let answer = {mood: happyOrUnhappy(response)};
-		console.log('Answer: ' + answer);
-		return res.json(answer);
-	  });
-	}
-	else {
-	  return res.status(400).send({error: 'Invalid Input'});
-	}
-  });
-
-  
-
-  function getTone(msg) {
-	const myRequest = new Request('http://localhost:3000/tone', {
-		method: "POST",
-		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'mode': 'cors'
-		},
-		body: JSON.stringify({
-		   texts: [msg]
-		})
-	})
-
-	fetch(myRequest)
-	.then((response) => {
-		var contentType = response.headers.get("content-type");
-		if(contentType && contentType.includes("application/json")) {
-		   return response.json();
-		}
-		throw new TypeError("Oops, we haven't got JSON!");
-	})
-	.then((response) => { 
-		console.log("response:" +  JSON.stringify(response));
-		if (response.mood) {
-		  //document.getElementById("mood").value = response.mood;
-		  return response.mood;
-		}
-	})
 	}*/

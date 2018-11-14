@@ -10,7 +10,6 @@
     "socket.io": "^1.7.4",
     "socketio-file-upload": "^0.6.3",
     "xmlhttprequest": "^1.8.0",
-
     "cfenv": "^1.1.0",
     "watson-developer-cloud": "^3.13.0",
     "body-parser": "^1.18.3",
