@@ -61,7 +61,7 @@ io.on('connection', function(socket){
 			if(ind !== -1){
 				var name = msg.substr(0, ind);
 				var msg = msg.substr(ind + 1);
-				var mood = AnalyzeTone(msg, socket);
+				var mood = AnalyzeTone(msg, socket,true);
 				console.log('Mood: ' + mood);
 				if(name in usernames){
 					usernames[name].emit('private', {msg: msg,user: socket.username});
@@ -74,7 +74,7 @@ io.on('connection', function(socket){
 				callback(" Bitte fügen sie eine Nachricht hinzu");
 			}
 		}else{
-		var mood = AnalyzeTone(msg, socket);
+		var mood = AnalyzeTone(msg, socket,false);
 		//console.log('Mood in message : ' + value);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
@@ -118,7 +118,7 @@ http.listen(port, function(){
 
 //--------------------------------------------------------------------------ToneAnalyzer
 
-function AnalyzeTone(message,socket){
+function AnalyzeTone(message,socket,private,name){
 	 
 	//params that should be analyzed 
 	var params = createToneRequest(message,socket)
@@ -146,7 +146,10 @@ toneAnalyzer.toneChat(params,function(error,response) {
 	} else {
 		value = happyOrUnhappy((response));
 		console.log("value ist = " + value);
-		io.emit('mood', {msg: value,user: socket.username});
+		if(!private){
+			io.emit('mood', {msg: value,user: socket.username});
+		} 
+		
 		console.log(JSON.stringify(response, null, 2));	
 	}
 });
