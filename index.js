@@ -9,7 +9,6 @@ var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 var readline = require('readline');
 var bodyParser = require('body-parser');
 var Request = require('request');
-var value;
 
 require('dotenv').config({silent: true});
 
@@ -141,6 +140,7 @@ function createToneRequest (message,socket) {
 
 //the actual analyzer 
 toneAnalyzer.toneChat(params,function(error,response) {
+	var value;
 	if (error) {
 		console.log(error);
 	} else {
