@@ -3,12 +3,9 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var port = process.env.PORT || 3000;
-var SocketIOFileUpload = require('socketio-file-upload');
+//var SocketIOFileUpload = require('socketio-file-upload');
 var usernames = {};
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
-var readline = require('readline');
-var bodyParser = require('body-parser');
-var Request = require('request');
 
 require('dotenv').config({silent: true});
 
@@ -18,19 +15,15 @@ const toneAnalyzer = new ToneAnalyzerV3({
 	password: process.env.TONE_ANALYZER_PASSWORD,
 });
 
-
-
-app.use(bodyParser.json());
-//app.use(express.static('public'));
-//app.use(SocketIOFileUpload.router);
+app.use(express.static('public'));
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+	res.sendFile(__dirname + '/index.html');
 });
 
 
 io.on('connection', function(socket){
 	console.log('Socket verbunden');
-
+/*
 	//Set up the uploader with the path
 	var uploader = new SocketIOFileUpload();
 	uploader.dir = __dirname;
@@ -51,7 +44,7 @@ io.on('connection', function(socket){
 	uploader.on('error', function(event){
 		console.log('Error from uploader',event);
 	});
-
+*/
 	//send message
 	socket.on('chat message', function(data, callback){
 		var msg = data.trim();

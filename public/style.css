@@ -1,0 +1,80 @@
+* { padding: 0; box-sizing: border-box; }
+
+		body{ 
+			font: 13px Helvetica, Arial;
+			}
+		#container{
+		 width: 700px;
+		 margin: 0 auto;
+		}		
+		#chatFenster{
+			float: left;
+			width: 500px;
+			height: 450px;	
+			overflow: auto;		
+		}
+		#chat{
+			display: none;
+		}
+		
+		#chatWrapper{
+			float:left;
+			border:1px #ccc solid;
+			border-radius: 10px;
+			background:f4f4f4;
+			padding:10px;
+			
+		}
+		#chatUserWrapper{
+			float: left;
+			border:1px #ccc solid;
+			border-radius: 10px;
+			background:#f4f4f4;
+			padding:10px;
+			margin-left:20px;
+			width:150px;
+			max-height:200px;
+		}
+		
+		#usernameWrapper{
+			
+			float: right;
+			border:1px #ccc solid;
+			border-radius: 10px;
+			background:#f4f4f4;
+			padding:10px;
+			margin-left:20px;
+		}	
+
+		#m{
+			width: 450px;
+		}
+			
+		input{
+			height:30px;
+			border:solid 1px #ccc;			
+		}
+		button{
+			height:30px;
+			border:solid 1px #ccc;			
+		}
+		.private{
+			color:dimgray;
+			font-style:italic;
+		}
+		.public{
+			color:black;
+		}
+		.error{
+			color:darkred;
+		}
+		.mood{
+			font-size:9px;
+			font-style:italic;
+			color:rgb(180, 102, 0); 
+		}
+		.date{
+			font-size:9px;
+			font-style:italic;
+			color:teal; 
+		}
