@@ -75,7 +75,7 @@ io.on('connection', function(socket){
 			}
 		}else{
 		var mood = AnalyzeTone(msg, socket);
-		console.log('Mood in message : ' + value);
+		//console.log('Mood in message : ' + value);
 		io.emit('chat message', {msg: msg,user: socket.username});
 		}
 	});
